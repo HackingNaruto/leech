@@ -785,7 +785,7 @@ with open("a2c.conf", "a+") as a:
     if TORRENT_TIMEOUT:
         a.write(f"bt-stop-timeout={TORRENT_TIMEOUT}\n")
     a.write(f"bt-tracker=[{trackers}]")
-srun([bot_cache['pkgs'][0], "--conf-path=/usr/src/app/a2c.conf"])
+srun([bot_cache['pkgs'][0], "--conf-path=a2c.conf"])
 alive = Popen(["python3", "alive.py"])
 sleep(0.5)
 if ospath.exists('accounts.zip'):
