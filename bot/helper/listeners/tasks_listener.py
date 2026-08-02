@@ -40,6 +40,7 @@ from bot.helper.mirror_utils.rclone_utils.transfer import RcloneTransferHelper
 from bot.helper.telegram_helper.message_utils import sendCustomMsg, sendMessage, editMessage, deleteMessage, delete_all_messages, delete_links, sendMultiMessage, update_all_messages
 from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.ext_utils.db_handler import DbManger
+from bot.helper.ext_utils.media_pipeline import process_media_file, handle_zip_auto_merge
 from bot.helper.themes import BotTheme
 
 
@@ -426,6 +427,25 @@ class MirrorLeechListener:
             for s in m_size:
                 size = size - s
             LOGGER.info(f"Leech Name: {up_name}")
+            # ── ZIP Auto Merge ──
+            if up_path and up_path.lower().endswith('.zip'):
+                merged = await handle_zip_auto_merge(self, up_path)
+                if merged:
+                    up_path = merged
+                    up_name = ospath.basename(merged)
+                    up_dir = ospath.dirname(merged)
+            # ── Per-file Media Processing (IntroSub, AudioTag, Sample, Convert) ──
+            if ospath.isfile(up_path or ospath.join(up_dir, up_name)):
+                _proc_path = up_path or ospath.join(up_dir, up_name)
+                _final_path, _extra_files = await process_media_file(self, _proc_path)
+                if _final_path != _proc_path:
+                    up_path = _final_path
+                    up_name = ospath.basename(_final_path)
+                    up_dir = ospath.dirname(_final_path)
+                # Upload extra files (e.g. sample clip) after main upload
+                _extra_to_upload = _extra_files
+            else:
+                _extra_to_upload = []
             tg = TgUploader(up_name, up_dir, self)
             tg_upload_status = TelegramStatus(
                 tg, size, self.message, gid, 'up', self.upload_details)
@@ -433,6 +453,11 @@ class MirrorLeechListener:
                 download_dict[self.uid] = tg_upload_status
             await update_all_messages()
             await tg.upload(o_files, m_size, size)
+            # Upload sample clip if created
+            for _extra in _extra_to_upload:
+                if ospath.exists(_extra):
+                    _extra_tg = TgUploader(ospath.basename(_extra), ospath.dirname(_extra), self)
+                    await _extra_tg.upload([], [], await get_path_size(_extra))
         elif self.upPath == 'gd':
             size = await get_path_size(up_path)
             LOGGER.info(f"Upload Name: {up_name}")

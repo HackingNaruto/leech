@@ -32,7 +32,7 @@ from .helper.listeners.aria2_listener import start_aria2_listener
 from .helper.themes import BotTheme
 from .modules import authorize, clone, gd_count, gd_delete, gd_list, cancel_mirror, mirror_leech, status, torrent_search, torrent_select, ytdlp, \
                      rss, shell, eval, users_settings, bot_settings, speedtest, save_msg, images, imdb, anilist, mediainfo, mydramalist, gen_pyro_sess, \
-                     gd_clean, broadcast, category_select
+                     gd_clean, broadcast, category_select, user_settings
 
 async def stats(client, message):
     msg, btns = await get_stats(message)
@@ -263,6 +263,7 @@ async def main():
     bot.add_handler(MessageHandler(stats, filters=command(
         BotCommands.StatsCommand) & CustomFilters.authorized & ~CustomFilters.blacklisted))
     LOGGER.info(f"KPSML-X Bot [@{bot_name}] Started!")
+    user_settings.add_handlers()
     if user:
         LOGGER.info(f"KPSML-X User [@{user.me.username}] Ready!")
     signal(SIGINT, exit_clean_up)
