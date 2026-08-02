@@ -772,7 +772,7 @@ if ospath.exists('shorteners.txt'):
 PORT = environ.get('PORT')
 Popen(f"gunicorn web.wserver:app --bind 0.0.0.0:{PORT} --worker-class gevent", shell=True)
 
-bot_cache['pkgs'] = ['aria2c', 'qbittorrent-nox', 'rclone', 'ffmpeg', 'aria2c|qbittorrent-nox|rclone|ffmpeg']
+bot_cache['pkgs'] = ['aria2c', 'qbittorrent-nox', 'ffmpeg', 'rclone', 'aria2c|qbittorrent-nox|ffmpeg|rclone']
 
 srun([bot_cache['pkgs'][1], "-d", f"--profile={getcwd()}"])
 if not ospath.exists('.netrc'):
