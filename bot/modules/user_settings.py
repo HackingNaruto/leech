@@ -226,7 +226,7 @@ async def user_settings_text_reply(client, message):
     await message.reply(
         f"✅ <b>Setting saved!</b>\n"
         f"<code>{key}</code> → <code>{value}</code>\n\n"
-        f"Use /usetting to view all your settings."
+        f"Use /mset to view all your settings."
     )
 
 
@@ -240,6 +240,6 @@ from pyrogram.filters import create as create_filter
 awaiting_text_filter = create_filter(_filter_awaiting_text)
 
 def add_handlers():
-    bot.add_handler(MessageHandler(user_settings_cmd, filters=command("usetting") & CustomFilters.authorized))
+    bot.add_handler(MessageHandler(user_settings_cmd, filters=command("mset") & CustomFilters.authorized))
     bot.add_handler(CallbackQueryHandler(user_settings_cb, filters=regex(r"^us_")))
     bot.add_handler(MessageHandler(user_settings_text_reply, filters=awaiting_text_filter & CustomFilters.authorized))
