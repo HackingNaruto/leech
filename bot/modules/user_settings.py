@@ -24,6 +24,7 @@ from bot.helper.ext_utils.db_handler import DbManger
 #  CONSTANTS
 # ─────────────────────────────────────────────
 
+KEY_KEEP_LOCAL       = "us_keep_local"
 KEY_SAMPLE_VIDEO     = "sample_video"
 KEY_SAMPLE_DURATION  = "sample_duration"
 KEY_CONVERT_VIDEO    = "convert_video"
@@ -59,6 +60,7 @@ def _bool_emoji(val: bool) -> str:
 
 
 def _build_main_menu(user_id: int) -> tuple[str, object]:
+    kl = _get_user_setting(user_id, KEY_KEEP_LOCAL, False)
     sv = _get_user_setting(user_id, KEY_SAMPLE_VIDEO, False)
     sd = _get_user_setting(user_id, KEY_SAMPLE_DURATION, 60)
     cv = _get_user_setting(user_id, KEY_CONVERT_VIDEO, False)
@@ -72,6 +74,8 @@ def _build_main_menu(user_id: int) -> tuple[str, object]:
 
     text = (
         "<b>🎛️ Your Personal Settings</b>\n\n"
+        f"<b>💾 Storage Options</b>\n"
+        f"  └ Keep Local (No Upload): {_bool_emoji(kl)}\n\n"
         f"<b>🎬 Video Engine</b>\n"
         f"  ├ Sample Video   : {_bool_emoji(sv)}\n"
         f"  ├ Sample Duration: {sd}s\n"
@@ -90,21 +94,22 @@ def _build_main_menu(user_id: int) -> tuple[str, object]:
 
     btn = ButtonMaker()
 
-    btn.button_data(f"🎬 Sample Video {_bool_emoji(sv)}", f"us_toggle_{KEY_SAMPLE_VIDEO}")
-    btn.button_data(f"⏱ Duration: {sd}s", f"us_menu_sample_dur")
-    btn.button_data(f"🔄 Convert Video {_bool_emoji(cv)}", f"us_toggle_{KEY_CONVERT_VIDEO}")
-    btn.button_data(f"📦 Format: {cf.upper()}", f"us_menu_convert_fmt")
+    btn.ibutton(f"💾 Keep Local {_bool_emoji(kl)}", f"us_toggle_{KEY_KEEP_LOCAL}")
+    btn.ibutton(f"🎬 Sample Video {_bool_emoji(sv)}", f"us_toggle_{KEY_SAMPLE_VIDEO}")
+    btn.ibutton(f"⏱ Duration: {sd}s", f"us_menu_sample_dur")
+    btn.ibutton(f"🔄 Convert Video {_bool_emoji(cv)}", f"us_toggle_{KEY_CONVERT_VIDEO}")
+    btn.ibutton(f"📦 Format: {cf.upper()}", f"us_menu_convert_fmt")
 
-    btn.button_data(f"📝 IntroSub {_bool_emoji(isub)}", f"us_toggle_{KEY_INTRO_SUB}")
-    btn.button_data("✏️ Set Intro Text", f"us_set_text_{KEY_INTRO_TEXT}")
-    btn.button_data(f"⏱ IntroSub Dur: {idur}s", f"us_menu_intro_dur")
+    btn.ibutton(f"📝 IntroSub {_bool_emoji(isub)}", f"us_toggle_{KEY_INTRO_SUB}")
+    btn.ibutton("✏️ Set Intro Text", f"us_set_text_{KEY_INTRO_TEXT}")
+    btn.ibutton(f"⏱ IntroSub Dur: {idur}s", f"us_menu_intro_dur")
 
-    btn.button_data(f"🏷️ Audio Tag {_bool_emoji(at)}", f"us_toggle_{KEY_AUDIO_TAG}")
-    btn.button_data("✏️ Set Tag Text", f"us_set_text_{KEY_AUDIO_TAG_TEXT}")
+    btn.ibutton(f"🏷️ Audio Tag {_bool_emoji(at)}", f"us_toggle_{KEY_AUDIO_TAG}")
+    btn.ibutton("✏️ Set Tag Text", f"us_set_text_{KEY_AUDIO_TAG_TEXT}")
 
-    btn.button_data(f"📦 Auto Merge Zip {_bool_emoji(am)}", f"us_toggle_{KEY_AUTO_MERGE}")
+    btn.ibutton(f"📦 Auto Merge Zip {_bool_emoji(am)}", f"us_toggle_{KEY_AUTO_MERGE}")
 
-    btn.button_data("❌ Close", "us_close")
+    btn.ibutton("❌ Close", "us_close")
 
     return text, btn.build_menu(2)
 
@@ -115,21 +120,21 @@ def _build_sub_menu(menu_type: str, current_value) -> tuple[str, object]:
         title = "⏱ Select Sample Video Duration"
         for dur in [15, 30, 60]:
             mark = "✅ " if current_value == dur else ""
-            btn.button_data(f"{mark}{dur}s", f"us_set_{KEY_SAMPLE_DURATION}_{dur}")
+            btn.ibutton(f"{mark}{dur}s", f"us_set_{KEY_SAMPLE_DURATION}_{dur}")
     elif menu_type == "intro_dur":
         title = "⏱ Select IntroSub Duration"
         for dur in [15, 30, 60]:
             mark = "✅ " if current_value == dur else ""
-            btn.button_data(f"{mark}{dur}s", f"us_set_{KEY_INTRO_DURATION}_{dur}")
+            btn.ibutton(f"{mark}{dur}s", f"us_set_{KEY_INTRO_DURATION}_{dur}")
     elif menu_type == "convert_fmt":
         title = "📦 Select Output Format"
         for fmt in ["mkv", "mp4", "avi"]:
             mark = "✅ " if current_value == fmt else ""
-            btn.button_data(f"{mark}{fmt.upper()}", f"us_set_{KEY_CONVERT_FORMAT}_{fmt}")
+            btn.ibutton(f"{mark}{fmt.upper()}", f"us_set_{KEY_CONVERT_FORMAT}_{fmt}")
     else:
         title = "Unknown menu"
 
-    btn.button_data("⬅️ Back", "us_back")
+    btn.ibutton("⬅️ Back", "us_back")
     return f"<b>{title}</b>", btn.build_menu(3)
 
 

@@ -422,6 +422,31 @@ class MirrorLeechListener:
             LOGGER.info(f'Start from Queued/Upload: {name}')
         async with queue_dict_lock:
             non_queued_up.add(self.uid)
+
+        # Check for Keep Local (Download Only)
+        user_dict = user_data.get(self.message.from_user.id, {})
+        if user_dict.get('us_keep_local', False):
+            LOGGER.info(f"Keep Local Enabled. Skipping upload for: {up_name}")
+            msg = f'''<i><b>✅ Saved to Local Drive!</b></i>
+<b>Task for:</b> {self.tag}
+<b>Size:</b> {get_readable_file_size(size)}
+<b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}'''
+            await sendMessage(self.message, msg)
+            async with download_dict_lock:
+                if self.uid in download_dict.keys():
+                    del download_dict[self.uid]
+                count = len(download_dict)
+            if count == 0:
+                await self.clean()
+            else:
+                await update_all_messages()
+            async with queue_dict_lock:
+                if self.uid in non_queued_up:
+                    non_queued_up.remove(self.uid)
+            await start_from_queued()
+            await delete_links(self.message)
+            return
+
         if self.isLeech:
             size = await get_path_size(up_dir)
             for s in m_size:
